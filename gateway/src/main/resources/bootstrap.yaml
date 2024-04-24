@@ -1,0 +1,18 @@
+spring:
+  cloud:
+    config:
+      name: gateway
+      discovery:
+        service-id: config
+        enabled: true
+
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8082/eureka/

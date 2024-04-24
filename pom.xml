@@ -19,6 +19,7 @@
     <modules>
         <module>config</module>
         <module>discovery</module>
+        <module>gateway</module>
     </modules>
 
 </project>
