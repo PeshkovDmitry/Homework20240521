@@ -23,6 +23,7 @@
         <module>book-service</module>
         <module>rating-service</module>
         <module>bank-service</module>
+        <module>storage-service</module>
     </modules>
 
 </project>
