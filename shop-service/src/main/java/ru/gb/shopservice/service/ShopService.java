@@ -73,12 +73,12 @@ public class ShopService {
             Product product = productRepository.findById(item.getId()).get();
             if (item.getInShop() > 0) {
                 status.getInStorage().add(
-                        new Purchase(product.getTitle(), item.getInShop(), product.getPrice())
+                        new Purchase(item.getId(), product.getTitle(), item.getInShop(), product.getPrice())
                 );
             }
             if (item.getWithBuyer() > 0) {
                 status.getPurchases().add(
-                        new Purchase(product.getTitle(), item.getWithBuyer(), product.getPrice())
+                        new Purchase(item.getId(), product.getTitle(), item.getWithBuyer(), product.getPrice())
                 );
             }
         }
@@ -89,7 +89,7 @@ public class ShopService {
      * Метод для покупки товара
      */
 
-    public void buy(long id, int count) throws Exception {
+    public boolean buy(long id, int count) throws Exception {
         if (!reserve(id, count)) {
             throw new Exception("Не удалось зарезервировать товар");
         }
@@ -102,6 +102,7 @@ public class ShopService {
             pay(id, -1 * count);
             throw new Exception("Не удалось передать товар покупателю");
         }
+        return true;
     }
 
     /*

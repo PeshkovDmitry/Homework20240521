@@ -3,12 +3,14 @@ package ru.gb.shopservice.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.gb.shopservice.dto.storage.ReserveRequest;
 import ru.gb.shopservice.dto.ShopStatus;
 import ru.gb.shopservice.service.ShopService;
+import org.springframework.ui.Model;
 
-@RestController
+@Controller
 @AllArgsConstructor
 @RequestMapping("/")
 public class ShopController {
@@ -16,18 +18,21 @@ public class ShopController {
     private final ShopService shopService;
 
     @GetMapping
-    public ResponseEntity<ShopStatus> getAllAccounts() {
-        return new ResponseEntity<>(shopService.getStatus(), HttpStatus.OK);
+    public String showHomePage(Model model) {
+        ShopStatus status = shopService.getStatus();
+        model.addAttribute("amount", status.getUserAmount());
+        model.addAttribute("purchases", status.getPurchases());
+        model.addAttribute("inStorage", status.getInStorage());
+        return "home";
     }
 
     @PostMapping
-    public ResponseEntity<ReserveRequest> pay(@RequestBody ReserveRequest request) {
+    public String pay(ReserveRequest request) {
         try {
             shopService.buy(request.getId(), request.getCount());
-            return new ResponseEntity<>(request, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(request, HttpStatus.CONFLICT);
-        }
+        } catch (Exception e) {}
+        return "redirect:html://localhost/shop-service";
+
     }
 
 

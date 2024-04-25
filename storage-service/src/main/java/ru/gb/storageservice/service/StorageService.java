@@ -44,7 +44,7 @@ public class StorageService {
         if (item.getInReserve() == 0) {
             throw new RuntimeException("Продукт не был зарезервирован");
         }
-        item.setWithBuyer(item.getInReserve());
+        item.setWithBuyer(item.getWithBuyer() + item.getInReserve());
         item.setInReserve(0);
         itemRepository.save(item);
     }
