@@ -17,5 +17,7 @@
 
 Сделано на основе статьи: https://www.baeldung.com/spring-cloud-bootstrapping 
 
+Папка с настройками application-config должна быть в домашней папке пользователя.
 Первым запускается config, потом discovery, потом gateway, потом оставшиеся три сервиса.
 Рабочая страничка: http://localhost:8080/shop-service
+Аспекты реализованы в микросервисе shop-service 
