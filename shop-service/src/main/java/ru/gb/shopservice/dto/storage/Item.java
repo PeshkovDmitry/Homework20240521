@@ -1,4 +1,4 @@
-package ru.gb.shopservice.model;
+package ru.gb.shopservice.dto.storage;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,18 +8,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Item {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
-  private String title;
-  private BigDecimal price;
+  private int inShop;
+  private int inReserve;
+  private int withBuyer;
 
 }

@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.gb.shopservice.model.Product;
 import ru.gb.shopservice.repository.ProductRepository;
 
+import java.math.BigDecimal;
+
 @Service
 @AllArgsConstructor
 public class InitialProductRepositoryLoadingService implements CommandLineRunner {
@@ -16,10 +18,10 @@ public class InitialProductRepositoryLoadingService implements CommandLineRunner
     public void run(String... args) throws Exception {
 
         productRepository.save(
-                new Product(1L, "Ботинки", 150));
+                new Product(1L, "Ботинки", new BigDecimal(150)));
 
         productRepository.save(
-                new Product(2L, "Кроссовки", 200));
+                new Product(2L, "Кроссовки", new BigDecimal(200)));
 
     }
 }

@@ -3,47 +3,34 @@ package ru.gb.shopservice.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import ru.gb.shopservice.dto.GiveToBuyerRequest;
-import ru.gb.shopservice.dto.ReserveRequest;
-import ru.gb.shopservice.model.Product;
-import ru.gb.shopservice.service.StorageService;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
+import ru.gb.shopservice.dto.storage.ReserveRequest;
+import ru.gb.shopservice.dto.ShopStatus;
+import ru.gb.shopservice.service.ShopService;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/")
 public class ShopController {
 
-    private final StorageService storageService;
+    private final ShopService shopService;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<Product>> getAllAccounts() {
-        return new ResponseEntity<>(storageService.getAll(), HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<ShopStatus> getAllAccounts() {
+        return new ResponseEntity<>(shopService.getStatus(), HttpStatus.OK);
     }
 
-    @PostMapping("/reserve")
+    @PostMapping
     public ResponseEntity<ReserveRequest> pay(@RequestBody ReserveRequest request) {
         try {
-            storageService.setReserved(request.getId(), request.getCount());
+            shopService.buy(request.getId(), request.getCount());
             return new ResponseEntity<>(request, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(request, HttpStatus.CONFLICT);
         }
     }
 
-    @PostMapping("/sell")
-    public ResponseEntity<GiveToBuyerRequest> pay(@RequestBody GiveToBuyerRequest request) {
-        try {
-            storageService.setSelling(request.getId());
-            return new ResponseEntity<>(request, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(request, HttpStatus.CONFLICT);
-        }
-    }
+
 
 
 }
