@@ -3,23 +3,23 @@ package ru.gb.storageservice.service;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
-import ru.gb.storageservice.model.Product;
-import ru.gb.storageservice.repository.ProductRepository;
+import ru.gb.storageservice.model.Item;
+import ru.gb.storageservice.repository.ItemRepository;
 
 @Service
 @AllArgsConstructor
 public class InitialStorageRepositoryLoadingService implements CommandLineRunner {
 
-    private final ProductRepository productRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public void run(String... args) throws Exception {
 
-        productRepository.save(
-                new Product(1L, "Ботинки", 4, 0,0));
+        itemRepository.save(
+                new Item(1L, 4, 0,0));
 
-        productRepository.save(
-                new Product(2L, "Кроссовки", 6, 0,0));
+        itemRepository.save(
+                new Item(2L, 6, 0,0));
 
     }
 }

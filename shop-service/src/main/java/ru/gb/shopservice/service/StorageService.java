@@ -1,10 +1,10 @@
-package ru.gb.storageservice.service;
+package ru.gb.shopservice.service;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.gb.storageservice.model.Item;
-import ru.gb.storageservice.repository.ItemRepository;
+import ru.gb.shopservice.model.Product;
+import ru.gb.shopservice.repository.ProductRepository;
 
 
 import java.util.List;
@@ -13,40 +13,40 @@ import java.util.List;
 @AllArgsConstructor
 public class StorageService {
 
-    private final ItemRepository itemRepository;
+    private final ProductRepository productRepository;
 
-    public List<Item> getAll() {
-        return itemRepository.findAll();
+    public List<Product> getAll() {
+        return productRepository.findAll();
     }
 
     @Transactional
     public void setReserved(long id, int count) {
-        Item item = itemRepository
+        Product product = productRepository
                 .findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт не найден"));
-        if (item.getInShop() < count) {
+        if (product.getInShop() < count) {
             throw new RuntimeException("Недостаточное количество");
         }
-        item.setInReserve(
-                item.getInReserve() + count
+        product.setInReserve(
+                product.getInReserve() + count
         );
-        item.setInShop(
-                item.getInShop() - count
+        product.setInShop(
+                product.getInShop() - count
         );
-        itemRepository.save(item);
+        productRepository.save(product);
     }
 
     @Transactional
     public void setSelling(long id) {
-        Item item = itemRepository
+        Product product = productRepository
                 .findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт не найден"));
-        if (item.getInReserve() == 0) {
+        if (product.getInReserve() == 0) {
             throw new RuntimeException("Продукт не был зарезервирован");
         }
-        item.setWithBuyer(item.getInReserve());
-        item.setInReserve(0);
-        itemRepository.save(item);
+        product.setWithBuyer(product.getInReserve());
+        product.setInReserve(0);
+        productRepository.save(product);
     }
 
 }

@@ -1,10 +1,10 @@
-package ru.gb.ratingservice;
+package ru.gb.shopservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RatingServiceApplicationTests {
+class ShopServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

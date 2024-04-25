@@ -8,18 +8,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Item {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
-  private String title;
   private int inShop;
   private int inReserve;
   private int withBuyer;
