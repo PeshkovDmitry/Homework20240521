@@ -20,6 +20,8 @@ public class Product {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
   private String title;
-  private int count;
+  private int inShop;
+  private int inReserve;
+  private int withBuyer;
 
 }

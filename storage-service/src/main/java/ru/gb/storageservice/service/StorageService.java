@@ -1,41 +1,52 @@
-package ru.gb.bankservice.service;
+package ru.gb.storageservice.service;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.gb.bankservice.dto.TransferRequest;
-import ru.gb.bankservice.model.Account;
-import ru.gb.bankservice.repository.AccountRepository;
+import ru.gb.storageservice.model.Product;
+import ru.gb.storageservice.repository.ProductRepository;
+
 
 import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class BankService {
+public class StorageService {
 
-    private final AccountRepository accountRepository;
+    private final ProductRepository productRepository;
 
-    public List<Account> getAll() {
-        return accountRepository.findAll();
+    public List<Product> getAll() {
+        return productRepository.findAll();
     }
 
     @Transactional
-    public void transferMoney(TransferRequest transferRequest) throws Exception {
-        Account sender = accountRepository
-                .findById(transferRequest.getSenderAccountId())
-                .orElseThrow(() -> new Exception("Отправитель не найден"));
-        Account receiver = accountRepository
-                .findById(transferRequest.getReceiverAccountId())
-                .orElseThrow(() -> new Exception("Получатель не найден"));
-        if (sender.getAmount().compareTo(transferRequest.getAmount()) < 0) {
-            throw new Exception("У отправителя недостаточно средств");
+    public void setReserved(long id, int count) {
+        Product product = productRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("Продукт не найден"));
+        if (product.getInShop() < count) {
+            throw new RuntimeException("Недостаточное количество");
         }
-        sender.setAmount(
-                sender.getAmount().subtract(transferRequest.getAmount()));
-        receiver.setAmount(
-                receiver.getAmount().add(transferRequest.getAmount()));
-        accountRepository.save(sender);
-        accountRepository.save(receiver);
-
+        product.setInReserve(
+                product.getInReserve() + count
+        );
+        product.setInShop(
+                product.getInShop() - count
+        );
+        productRepository.save(product);
     }
+
+    @Transactional
+    public void setSelling(long id) {
+        Product product = productRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("Продукт не найден"));
+        if (product.getInReserve() == 0) {
+            throw new RuntimeException("Продукт не был зарезервирован");
+        }
+        product.setWithBuyer(product.getInReserve());
+        product.setInReserve(0);
+        productRepository.save(product);
+    }
+
 }
