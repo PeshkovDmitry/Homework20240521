@@ -1,16 +1,32 @@
-spring:
-  cloud:
-    config:
-      name: gateway
-      discovery:
-        service-id: config
-        enabled: true
+#spring:
+#  cloud:
+#    config:
+#      name: gateway
+#      discovery:
+#        service-id: config
+#        enabled: true
+#
+#    gateway:
+#      discovery:
+#        locator:
+#          enabled: true
+#          lowerCaseServiceId: true
 
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-          lowerCaseServiceId: true
+zuul:
+  routes:
+    bank-service:
+      path: /bank-service/**
+      stripPrefix: true
+      url: http://localhost:8083
+    storage-service:
+      path: /storage-service/**
+      stripPrefix: true
+      url: http://localhost:8084
+    shop-service:
+      path: /shop-service/**
+      stripPrefix: true
+      url: http://localhost:8085
+
 
 eureka:
   client:
