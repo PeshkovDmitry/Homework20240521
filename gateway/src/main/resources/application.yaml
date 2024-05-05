@@ -7,12 +7,17 @@ spring:
     active: default
 
 
-#zuul:
-#  routes:
-#    bank-service:
-#      path: /bank-service/**
-#      stripPrefix: true
-#      url: http://localhost:8083
+zuul:
+  routes:
+    bank-service:
+      path: /bank-service/**
+      stripPrefix: true
+      url: http://127.0.0.1:8083
+
+ribbon:
+  eureka:
+    enabled: false
+
 #    storage-service:
 #      path: /storage-service/**
 #      stripPrefix: true
@@ -21,9 +26,3 @@ spring:
 #      path: /shop-service/**
 #      stripPrefix: true
 #      url: http://localhost:8085
-
-
-#eureka:
-#  client:
-#    serviceUrl:
-#      defaultZone: http://localhost:8082/eureka/
