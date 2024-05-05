@@ -12,23 +12,23 @@
 #          enabled: true
 #          lowerCaseServiceId: true
 
-zuul:
-  routes:
-    bank-service:
-      path: /bank-service/**
-      stripPrefix: true
-      url: http://localhost:8083
-    storage-service:
-      path: /storage-service/**
-      stripPrefix: true
-      url: http://localhost:8084
-    shop-service:
-      path: /shop-service/**
-      stripPrefix: true
-      url: http://localhost:8085
-
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8082/eureka/
+#zuul:
+#  routes:
+#    bank-service:
+#      path: /bank-service/**
+#      stripPrefix: true
+#      url: http://localhost:8083
+#    storage-service:
+#      path: /storage-service/**
+#      stripPrefix: true
+#      url: http://localhost:8084
+#    shop-service:
+#      path: /shop-service/**
+#      stripPrefix: true
+#      url: http://localhost:8085
+#
+#
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8082/eureka/
