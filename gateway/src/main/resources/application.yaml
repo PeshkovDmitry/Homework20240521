@@ -5,3 +5,24 @@ spring:
     import: optional:configserver:http://127.0.0.1:8081
   profiles:
     active: default
+
+
+zuul:
+  routes:
+    bank-service:
+      path: /bank-service/**
+      stripPrefix: true
+      url: http://127.0.0.1:8083
+
+ribbon:
+  eureka:
+    enabled: false
+
+#    storage-service:
+#      path: /storage-service/**
+#      stripPrefix: true
+#      url: http://localhost:8084
+#    shop-service:
+#      path: /shop-service/**
+#      stripPrefix: true
+#      url: http://localhost:8085

@@ -5,12 +5,13 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.gb.shopservice.dto.*;
-import ru.gb.shopservice.dto.bank.Account;
 import ru.gb.shopservice.dto.bank.TransferRequest;
 import ru.gb.shopservice.dto.storage.GiveToBuyerRequest;
 import ru.gb.shopservice.dto.storage.Item;
 import ru.gb.shopservice.dto.storage.ReserveRequest;
 import ru.gb.shopservice.model.Product;
+import ru.gb.shopservice.proxy.BankServiceProxy;
+import ru.gb.shopservice.proxy.StorageServiceProxy;
 import ru.gb.shopservice.repository.ProductRepository;
 
 import java.math.BigDecimal;
@@ -26,6 +27,10 @@ public class ShopService {
     private final HttpHeaders headers;
 
     private final ProductRepository productRepository;
+
+    private final BankServiceProxy bankServiceProxy;
+
+    private final StorageServiceProxy storageServiceProxy;
 
     /*
      * Метод опрашивает микросервис банка и микросервис склада
@@ -45,14 +50,7 @@ public class ShopService {
      * суммы на счету покупателя
      */
     private BigDecimal getUserAmount() {
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<Account[]> entity = new HttpEntity<>(headers);
-        ResponseEntity<Account[]> response = template.exchange(
-                "http://localhost:8080/bank-service/all",
-                HttpMethod.GET,
-                entity,
-                Account[].class);
-        return response.getBody()[1].getAmount();
+        return bankServiceProxy.getAllAccounts().get(1).getAmount();
     }
 
     /*
@@ -62,14 +60,7 @@ public class ShopService {
      * формирует данные о сделанных покупках и товаре в магазине
      */
     private ShopStatus getItemsInStorageAndSellingItems(ShopStatus status) {
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<Item[]> entity = new HttpEntity<>(headers);
-        ResponseEntity<Item[]> response = template.exchange(
-                "http://localhost:8080/storage-service/all",
-                HttpMethod.GET,
-                entity,
-                Item[].class);
-        for (Item item: response.getBody()) {
+        for (Item item: storageServiceProxy.getAllItems()) {
             Product product = productRepository.findById(item.getId()).get();
             if (item.getInShop() > 0) {
                 status.getInStorage().add(
@@ -109,19 +100,12 @@ public class ShopService {
      * Метод для резервирования товара на складе
      */
     private boolean reserve(long id, int count) {
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<ReserveRequest> entity = new HttpEntity<>(
-                new ReserveRequest(id, count),
-                headers);
-        ResponseEntity<ReserveRequest> response = template.exchange(
-                "http://localhost:8080/storage-service/reserve",
-                HttpMethod.POST,
-                entity,
-                ReserveRequest.class);
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
+        try {
+            storageServiceProxy.reserve(new ReserveRequest(id, count));
             return true;
+        } catch (Exception e) {
+            return false;
         }
-        return false;
     }
 
     /*
@@ -129,22 +113,15 @@ public class ShopService {
      */
 
     private boolean pay(long id, int count) {
-        BigDecimal price =
-            productRepository.findById(id).orElse(new Product()).getPrice();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<TransferRequest> entity = new HttpEntity<>(
-                new TransferRequest(
-                        2, 1, price.multiply(new BigDecimal(count))),
-                headers);
-        ResponseEntity<TransferRequest> response = template.exchange(
-                "http://localhost:8080/bank-service/pay",
-                HttpMethod.POST,
-                entity,
-                TransferRequest.class);
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
+        try {
+            BigDecimal price =
+                    productRepository.findById(id).orElse(new Product()).getPrice();
+            bankServiceProxy.pay(new TransferRequest(
+                    2, 1, price.multiply(new BigDecimal(count))));
             return true;
+        } catch (Exception e) {
+            return false;
         }
-        return false;
     }
 
     /*
@@ -152,19 +129,12 @@ public class ShopService {
      */
 
     private boolean sell(long id) {
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<GiveToBuyerRequest> entity = new HttpEntity<>(
-                new GiveToBuyerRequest(id),
-                headers);
-        ResponseEntity<GiveToBuyerRequest> response = template.exchange(
-                "http://localhost:8080/storage-service/sell",
-                HttpMethod.POST,
-                entity,
-                GiveToBuyerRequest.class);
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
+        try {
+            storageServiceProxy.giveToBuyer(new GiveToBuyerRequest(id));
             return true;
+        } catch (Exception e) {
+            return false;
         }
-        return false;
     }
 
 }

@@ -33,7 +33,6 @@ public class ShopController {
         try {
             shopService.buy(request.getId(), request.getCount());
         } catch (Exception e) {}
-//        return "redirect:html://localhost/shop-service";
         ShopStatus status = shopService.getStatus();
         model.addAttribute("amount", status.getUserAmount());
         model.addAttribute("purchases", status.getPurchases());
