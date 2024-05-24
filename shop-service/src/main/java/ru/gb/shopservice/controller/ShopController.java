@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.gb.shopservice.aspect.TrackUserAction;
 import ru.gb.shopservice.dto.ShopStatus;
 import ru.gb.shopservice.dto.storage.ReserveRequest;
-import ru.gb.shopservice.service.ShopService;
+import ru.gb.shopservice.service.rest.ShopService;
 
 @Controller
 @AllArgsConstructor

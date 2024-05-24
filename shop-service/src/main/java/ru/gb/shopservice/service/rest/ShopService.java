@@ -1,23 +1,17 @@
-package ru.gb.shopservice.service;
+package ru.gb.shopservice.service.rest;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import ru.gb.shopservice.dto.*;
-import ru.gb.shopservice.dto.bank.TransferRequest;
-import ru.gb.shopservice.dto.storage.GiveToBuyerRequest;
 import ru.gb.shopservice.dto.storage.Item;
-import ru.gb.shopservice.dto.storage.ReserveRequest;
 import ru.gb.shopservice.model.Product;
 import ru.gb.shopservice.proxy.BankServiceProxy;
 import ru.gb.shopservice.proxy.StorageServiceProxy;
 import ru.gb.shopservice.repository.ProductRepository;
+import ru.gb.shopservice.service.LoggingService;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -58,9 +52,9 @@ public class ShopService {
 
     public void buy(long id, int count) {
         loggingService.log(String.format("Запрос на покупку товара с кодом \"%d\" в количестве %d единиц", id, count));
-        reserveService.reserve(id, count);
-        payService.pay(id, count);
-        sellService.sell(id, count);
+        reserveService.process(id, count);
+        payService.process(id, count);
+        sellService.process(id, count);
     }
 
     /*

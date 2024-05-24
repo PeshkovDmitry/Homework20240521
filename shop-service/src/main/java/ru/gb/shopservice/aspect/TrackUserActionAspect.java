@@ -16,7 +16,7 @@ public class TrackUserActionAspect {
     }
 
 
-    @Around("execution(* ru.gb.shopservice.service.ShopService.*(..))")
+    @Around("execution(* ru.gb.shopservice.service.rest.ShopService.*(..))")
     public Object log(ProceedingJoinPoint joinPoint) throws Throwable {
         String methodName = joinPoint.getSignature().getName();
         long startTime = System.currentTimeMillis();
