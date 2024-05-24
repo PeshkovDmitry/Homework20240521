@@ -13,25 +13,24 @@ public class SellService {
 
     private final StorageServiceProxy storageServiceProxy;
 
-    private final FileGatewayService fileGatewayService;
+    private final ReserveService reserveService;
+
+    private final PayService payService;
+
+    private final LoggingService loggingService;
 
     /*
      * Метод для передачи оплаченного товара покупателю
      */
 
-    public boolean sell(long id, int count) {
+    public void sell(long id, int count) {
         try {
-            fileGatewayService.writeToFile(
-                    "log.txt",
-                    "Shop-service (" + LocalDateTime.now() + "): "
-                            + String.format(
-                            "Запрос на выдачу товара с кодом \"%d\"",
-                            id
-                    ));
+            loggingService.log(String.format("Запрос на выдачу товара с кодом \"%d\"", id));
             storageServiceProxy.giveToBuyer(new GiveToBuyerRequest(id));
-            return true;
         } catch (Exception e) {
-            return false;
+            reserveService.reserve(id, -1 * count);
+            payService.pay(id, -1 * count);
+            throw new RuntimeException("Не удалось передать товар покупателю");
         }
     }
 

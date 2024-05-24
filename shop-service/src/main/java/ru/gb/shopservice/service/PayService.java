@@ -14,33 +14,29 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PayService {
 
-    private final FileGatewayService fileGatewayService;
-
     private final ProductRepository productRepository;
 
     private final BankServiceProxy bankServiceProxy;
+
+    private final ReserveService reserveService;
+
+    private final LoggingService loggingService;
 
     /*
      * Метод для оплаты товара
      */
 
-    public boolean pay(long id, int count) {
+    public void pay(long id, int count) {
         try {
-            fileGatewayService.writeToFile(
-                    "log.txt",
-                    "Shop-service (" + LocalDateTime.now() + "): "
-                            + String.format(
-                            "Запрос на покупку товара с кодом \"%d\" в количестве %d единиц",
-                            id,
-                            count
-                    ));
+            loggingService.log(
+                    String.format("Запрос на покупку товара с кодом \"%d\" в количестве %d единиц", id, count));
             BigDecimal price =
                     productRepository.findById(id).orElse(new Product()).getPrice();
             bankServiceProxy.pay(new TransferRequest(
                     2, 1, price.multiply(new BigDecimal(count))));
-            return true;
         } catch (Exception e) {
-            return false;
+            reserveService.reserve(id, -1 * count);
+            throw new RuntimeException("Не удалось оплатить товар");
         }
     }
 

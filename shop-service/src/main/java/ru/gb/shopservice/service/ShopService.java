@@ -29,13 +29,13 @@ public class ShopService {
 
     private final StorageServiceProxy storageServiceProxy;
 
-    private final FileGatewayService fileGatewayService;
-
     private final ReserveService reserveService;
 
     private final PayService payService;
 
     private final SellService sellService;
+
+    private final LoggingService loggingService;
 
 
     /*
@@ -47,9 +47,20 @@ public class ShopService {
         status.setPurchases(new ArrayList<>());
         status.setInStorage(new ArrayList<>());
         status.setUserAmount(getUserAmount());
-        status = getItemsInStorageAndSellingItems(status);
-        log("Выдача данных о состоянии магазина");
+        getItemsInStorageAndSellingItems(status);
+        loggingService.log("Выдача данных о состоянии магазина");
         return status;
+    }
+
+    /*
+     * Метод для покупки товара
+     */
+
+    public void buy(long id, int count) {
+        loggingService.log(String.format("Запрос на покупку товара с кодом \"%d\" в количестве %d единиц", id, count));
+        reserveService.reserve(id, count);
+        payService.pay(id, count);
+        sellService.sell(id, count);
     }
 
     /*
@@ -67,52 +78,37 @@ public class ShopService {
      * формирует данные о сделанных покупках и товаре в магазине
      */
 
-    private ShopStatus getItemsInStorageAndSellingItems(ShopStatus status) {
+    private void getItemsInStorageAndSellingItems(ShopStatus status) {
         for (Item item: storageServiceProxy.getAllItems()) {
             Product product = productRepository.findById(item.getId()).get();
-            if (item.getInShop() > 0) {
-                status.getInStorage().add(
-                        new Purchase(item.getId(), product.getTitle(), item.getInShop(), product.getPrice())
-                );
-            }
-            if (item.getWithBuyer() > 0) {
-                status.getPurchases().add(
-                        new Purchase(item.getId(), product.getTitle(), item.getWithBuyer(), product.getPrice())
-                );
-            }
+            getInStorage(status, item, product);
+            getWithBuyer(status, item, product);
         }
-        log("Выдача данных о купленных и доступных к покупке товарах");
-        return status;
+        loggingService.log("Выдача данных о купленных и доступных к покупке товарах");
     }
 
     /*
-     * Метод для покупки товара
+     * Метод определения количества данного продукта на складе
      */
 
-    public boolean buy(long id, int count) throws Exception {
-        log(String.format("Запрос на покупку товара с кодом \"%d\" в количестве %d единиц", id, count));
-        if (!reserveService.reserve(id, count)) {
-            throw new Exception("Не удалось зарезервировать товар");
+    private void getInStorage(ShopStatus status, Item item, Product product) {
+        if (item.getInShop() > 0) {
+            status.getInStorage().add(
+                    new Purchase(item.getId(), product.getTitle(), item.getInShop(), product.getPrice())
+            );
         }
-        if (!payService.pay(id, count)) {
-            reserveService.reserve(id, -1 * count);
-            throw new Exception("Не удалось оплатить товар");
-        }
-        if (!sellService.sell(id, count)) {
-            reserveService.reserve(id, -1 * count);
-            payService.pay(id, -1 * count);
-            throw new Exception("Не удалось передать товар покупателю");
-        }
-        return true;
     }
 
     /*
-     * Метод для логирования сообщений
+     * Метод определения количества данного продукта у покупателя
      */
-    private void log(String message) {
-        fileGatewayService.writeToFile(
-                "log.txt",
-                "Shop-service (" + LocalDateTime.now() + "): " + message);
+
+    private void getWithBuyer(ShopStatus status, Item item, Product product) {
+        if (item.getWithBuyer() > 0) {
+            status.getPurchases().add(
+            new Purchase(item.getId(), product.getTitle(), item.getWithBuyer(), product.getPrice())
+            );
+        }
     }
 
 }
