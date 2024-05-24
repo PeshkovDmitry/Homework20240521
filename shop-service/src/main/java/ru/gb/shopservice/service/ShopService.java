@@ -23,10 +23,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ShopService {
 
-    private final RestTemplate template;
-
-    private final HttpHeaders headers;
-
     private final ProductRepository productRepository;
 
     private final BankServiceProxy bankServiceProxy;
@@ -34,6 +30,13 @@ public class ShopService {
     private final StorageServiceProxy storageServiceProxy;
 
     private final FileGatewayService fileGatewayService;
+
+    private final ReserveService reserveService;
+
+    private final PayService payService;
+
+    private final SellService sellService;
+
 
     /*
      * Метод опрашивает микросервис банка и микросервис склада
@@ -45,10 +48,7 @@ public class ShopService {
         status.setInStorage(new ArrayList<>());
         status.setUserAmount(getUserAmount());
         status = getItemsInStorageAndSellingItems(status);
-        fileGatewayService.writeToFile(
-                "log.txt",
-                "Shop-service (" + LocalDateTime.now() + "): "
-                        + "Выдача данных о состоянии магазина");
+        log("Выдача данных о состоянии магазина");
         return status;
     }
 
@@ -56,16 +56,17 @@ public class ShopService {
      * Метод опрашивает микросервис магазина для получения
      * суммы на счету покупателя
      */
+
     private BigDecimal getUserAmount() {
         return bankServiceProxy.getAllAccounts().get(1).getAmount();
     }
-
     /*
      * Метод опрашивает микросервис склада и, сопоставляя полученные
      * данные (id, количество товара на складе, количество купленного товара)
      * с данными из репозитория магазина (id, название и цена),
      * формирует данные о сделанных покупках и товаре в магазине
      */
+
     private ShopStatus getItemsInStorageAndSellingItems(ShopStatus status) {
         for (Item item: storageServiceProxy.getAllItems()) {
             Product product = productRepository.findById(item.getId()).get();
@@ -80,10 +81,7 @@ public class ShopService {
                 );
             }
         }
-        fileGatewayService.writeToFile(
-                "log.txt",
-                "Shop-service (" + LocalDateTime.now() + "): "
-                        + "Выдача данных о купленных и доступных к покупке товарах");
+        log("Выдача данных о купленных и доступных к покупке товарах");
         return status;
     }
 
@@ -92,92 +90,29 @@ public class ShopService {
      */
 
     public boolean buy(long id, int count) throws Exception {
-        fileGatewayService.writeToFile(
-                "log.txt",
-                "Shop-service (" + LocalDateTime.now() + "): "
-                        + String.format(
-                        "Запрос на покупку товара с кодом \"%d\" в количестве %d единиц",
-                        id,
-                        count
-                ));
-        if (!reserve(id, count)) {
+        log(String.format("Запрос на покупку товара с кодом \"%d\" в количестве %d единиц", id, count));
+        if (!reserveService.reserve(id, count)) {
             throw new Exception("Не удалось зарезервировать товар");
         }
-        if (!pay(id, count)) {
-            reserve(id, -1 * count);
+        if (!payService.pay(id, count)) {
+            reserveService.reserve(id, -1 * count);
             throw new Exception("Не удалось оплатить товар");
         }
-        if (!sell(id)) {
-            reserve(id, -1 * count);
-            pay(id, -1 * count);
+        if (!sellService.sell(id, count)) {
+            reserveService.reserve(id, -1 * count);
+            payService.pay(id, -1 * count);
             throw new Exception("Не удалось передать товар покупателю");
         }
-
         return true;
     }
 
     /*
-     * Метод для резервирования товара на складе
+     * Метод для логирования сообщений
      */
-    private boolean reserve(long id, int count) {
-        try {
-            fileGatewayService.writeToFile(
-                    "log.txt",
-                    "Shop-service (" + LocalDateTime.now() + "): "
-                            + String.format(
-                            "Запрос на резервирование товара с кодом \"%d\" в количестве %d единиц",
-                            id,
-                            count
-                    ));
-            storageServiceProxy.reserve(new ReserveRequest(id, count));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /*
-     * Метод для оплаты товара
-     */
-
-    private boolean pay(long id, int count) {
-        try {
-            fileGatewayService.writeToFile(
-                    "log.txt",
-                    "Shop-service (" + LocalDateTime.now() + "): "
-                            + String.format(
-                            "Запрос на покупку товара с кодом \"%d\" в количестве %d единиц",
-                            id,
-                            count
-                    ));
-            BigDecimal price =
-                    productRepository.findById(id).orElse(new Product()).getPrice();
-            bankServiceProxy.pay(new TransferRequest(
-                    2, 1, price.multiply(new BigDecimal(count))));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /*
-     * Метод для передачи оплаченного товара покупателю
-     */
-
-    private boolean sell(long id) {
-        try {
-            fileGatewayService.writeToFile(
-                    "log.txt",
-                    "Shop-service (" + LocalDateTime.now() + "): "
-                            + String.format(
-                            "Запрос на выдачу товара с кодом \"%d\"",
-                            id
-                    ));
-            storageServiceProxy.giveToBuyer(new GiveToBuyerRequest(id));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    private void log(String message) {
+        fileGatewayService.writeToFile(
+                "log.txt",
+                "Shop-service (" + LocalDateTime.now() + "): " + message);
     }
 
 }
