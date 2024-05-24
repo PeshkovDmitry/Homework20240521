@@ -7,6 +7,7 @@ import ru.gb.storageservice.model.Item;
 import ru.gb.storageservice.repository.ItemRepository;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,7 +16,13 @@ public class StorageService {
 
     private final ItemRepository itemRepository;
 
+    private final FileGatewayService fileGatewayService;
+
     public List<Item> getAll() {
+        fileGatewayService.writeToFile(
+                "log.txt",
+                "Storage-service (" + LocalDateTime.now() + "): "
+                        + "Выдача полных данных");
         return itemRepository.findAll();
     }
 
@@ -34,6 +41,14 @@ public class StorageService {
                 item.getInShop() - count
         );
         itemRepository.save(item);
+        fileGatewayService.writeToFile(
+                "log.txt",
+                "Storage-service (" + LocalDateTime.now() + "): "
+                        + String.format(
+                        "Резервирование товара с кодом \"%d\" в количестве %d единиц",
+                        id,
+                        count
+                ));
     }
 
     @Transactional
@@ -46,6 +61,13 @@ public class StorageService {
         }
         item.setWithBuyer(item.getWithBuyer() + item.getInReserve());
         item.setInReserve(0);
+        fileGatewayService.writeToFile(
+                "log.txt",
+                "Storage-service (" + LocalDateTime.now() + "): "
+                        + String.format(
+                        "Выдача покупателю товара с кодом \"%d\"",
+                        id
+                ));
         itemRepository.save(item);
     }
 

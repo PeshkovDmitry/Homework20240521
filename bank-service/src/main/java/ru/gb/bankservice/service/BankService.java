@@ -22,7 +22,7 @@ public class BankService {
         fileGatewayService.writeToFile(
                 "log.txt",
                 "Bank-service (" + LocalDateTime.now() + "): "
-                + "Запрос полных данных");
+                + "Выдача полных данных");
         return accountRepository.findAll();
     }
 
@@ -41,7 +41,7 @@ public class BankService {
                 "log.txt",
                 "Bank-service (" + LocalDateTime.now() + "): "
                         + String.format(
-                                "Запрос на перевод от %s к %s %f у.е.",
+                                "Перевод от %s к %s %f у.е.",
                                 sender.getName(),
                                 receiver.getName(),
                                 transferRequest.getAmount()

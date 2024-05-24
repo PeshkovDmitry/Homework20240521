@@ -15,6 +15,7 @@ import ru.gb.shopservice.proxy.StorageServiceProxy;
 import ru.gb.shopservice.repository.ProductRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,8 @@ public class ShopService {
 
     private final StorageServiceProxy storageServiceProxy;
 
+    private final FileGatewayService fileGatewayService;
+
     /*
      * Метод опрашивает микросервис банка и микросервис склада
      * для формирования общего состояния магазина
@@ -42,6 +45,10 @@ public class ShopService {
         status.setInStorage(new ArrayList<>());
         status.setUserAmount(getUserAmount());
         status = getItemsInStorageAndSellingItems(status);
+        fileGatewayService.writeToFile(
+                "log.txt",
+                "Shop-service (" + LocalDateTime.now() + "): "
+                        + "Выдача данных о состоянии магазина");
         return status;
     }
 
@@ -73,6 +80,10 @@ public class ShopService {
                 );
             }
         }
+        fileGatewayService.writeToFile(
+                "log.txt",
+                "Shop-service (" + LocalDateTime.now() + "): "
+                        + "Выдача данных о купленных и доступных к покупке товарах");
         return status;
     }
 
@@ -81,6 +92,14 @@ public class ShopService {
      */
 
     public boolean buy(long id, int count) throws Exception {
+        fileGatewayService.writeToFile(
+                "log.txt",
+                "Shop-service (" + LocalDateTime.now() + "): "
+                        + String.format(
+                        "Запрос на покупку товара с кодом \"%d\" в количестве %d единиц",
+                        id,
+                        count
+                ));
         if (!reserve(id, count)) {
             throw new Exception("Не удалось зарезервировать товар");
         }
@@ -93,6 +112,7 @@ public class ShopService {
             pay(id, -1 * count);
             throw new Exception("Не удалось передать товар покупателю");
         }
+
         return true;
     }
 
@@ -101,6 +121,14 @@ public class ShopService {
      */
     private boolean reserve(long id, int count) {
         try {
+            fileGatewayService.writeToFile(
+                    "log.txt",
+                    "Shop-service (" + LocalDateTime.now() + "): "
+                            + String.format(
+                            "Запрос на резервирование товара с кодом \"%d\" в количестве %d единиц",
+                            id,
+                            count
+                    ));
             storageServiceProxy.reserve(new ReserveRequest(id, count));
             return true;
         } catch (Exception e) {
@@ -114,6 +142,14 @@ public class ShopService {
 
     private boolean pay(long id, int count) {
         try {
+            fileGatewayService.writeToFile(
+                    "log.txt",
+                    "Shop-service (" + LocalDateTime.now() + "): "
+                            + String.format(
+                            "Запрос на покупку товара с кодом \"%d\" в количестве %d единиц",
+                            id,
+                            count
+                    ));
             BigDecimal price =
                     productRepository.findById(id).orElse(new Product()).getPrice();
             bankServiceProxy.pay(new TransferRequest(
@@ -130,6 +166,13 @@ public class ShopService {
 
     private boolean sell(long id) {
         try {
+            fileGatewayService.writeToFile(
+                    "log.txt",
+                    "Shop-service (" + LocalDateTime.now() + "): "
+                            + String.format(
+                            "Запрос на выдачу товара с кодом \"%d\"",
+                            id
+                    ));
             storageServiceProxy.giveToBuyer(new GiveToBuyerRequest(id));
             return true;
         } catch (Exception e) {
