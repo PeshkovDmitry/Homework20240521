@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.gb.bankservice.dto.TransferRequest;
 import ru.gb.bankservice.model.Account;
 import ru.gb.bankservice.service.BankService;
+import ru.gb.bankservice.service.FileGatewayService;
 
 import java.util.List;
 
